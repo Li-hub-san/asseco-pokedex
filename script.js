@@ -2,6 +2,19 @@
 
 const pokemonListUrl = "https://pokeapi.co/api/v2/pokemon?limit=150";
 const cardContainer = document.querySelector(".card-container");
+const inputEl = document.getElementById("search");
+let pokemons = [];
+
+inputEl.addEventListener("keyup", (ev) => {
+  const search = ev.target.value;
+  console.log(search);
+
+  console.log(pokemons);
+  let filter = pokemons
+    .map((pokemon) => pokemon.name)
+    .filter((name) => name.includes(search));
+  console.log(filter);
+});
 
 const getJson = function (url, errMsg = "Something went wrong") {
   return fetch(url).then((response) => {
@@ -11,37 +24,20 @@ const getJson = function (url, errMsg = "Something went wrong") {
   });
 };
 
-getJson(pokemonListUrl)
-  .then((resp) => {
-    const pokemonList = resp["results"];
-    console.log("list", pokemonList);
+getJson(pokemonListUrl).then(async (resp) => {
+  const pokemonUrls = resp.results.map((pokemon) => pokemon.url);
+  console.log(pokemonUrls);
 
-    // pokemonList.forEach((el) => {
-    //   console.log(el);
-    //   cardContainer.insertAdjacentHTML(
-    //     "beforeend",
-    //     `<img src=${el.image}><p>${el.name}</p>`
-    //   );
-    // });
+  let promises = pokemonUrls.map((url) => getJson(url));
 
-    const {
-      results: [{ name: name, url: image }],
-    } = resp;
+  pokemons = await Promise.all(promises);
+  console.log(pokemons);
 
-    console.log(name);
-    console.log(image);
-
-    return fetch(image);
-  })
-  .then((response) => response.json())
-  .then((resp) => {
-    console.log("trying name", resp);
-
-    const { sprites, name } = resp;
-
+  pokemons.forEach((pokemon) => {
     cardContainer.insertAdjacentHTML(
       "afterbegin",
-      `<p class="card-name">${name}</p>
-          <img alt="pokemon ${name}" class="card-image" src=${sprites["front_default"]}>`
+      `<div class="card"><p class="card-name">${pokemon.name}</p>
+        <img alt="pokemon ${pokemon.name}" class="card-image" src=${pokemon.sprites.front_default}></div>`
     );
   });
+});
