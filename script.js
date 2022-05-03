@@ -10,10 +10,12 @@ inputEl.addEventListener("keyup", (ev) => {
   console.log(search);
 
   console.log(pokemons);
-  let filter = pokemons
-    .map((pokemon) => pokemon.name)
-    .filter((name) => name.includes(search));
-  console.log(filter);
+  let filteredPokemons = pokemons.filter((pokemon) =>
+    pokemon.name.includes(search)
+  );
+  console.log(filteredPokemons);
+  cardContainer.innerHTML = "";
+  renderCards(filteredPokemons);
 });
 
 const getJson = function (url, errMsg = "Something went wrong") {
@@ -33,11 +35,18 @@ getJson(pokemonListUrl).then(async (resp) => {
   pokemons = await Promise.all(promises);
   console.log(pokemons);
 
+  renderCards(pokemons);
+});
+
+const renderCards = function (pokemons) {
   pokemons.forEach((pokemon) => {
     cardContainer.insertAdjacentHTML(
       "afterbegin",
-      `<div class="card"><p class="card-name">${pokemon.name}</p>
-        <img alt="pokemon ${pokemon.name}" class="card-image" src=${pokemon.sprites.front_default}></div>`
+      `
+      <div class="card">
+        <p class="card-name">${pokemon.name}</p>
+        <img alt="pokemon ${pokemon.name}" class="card-image" src=${pokemon.sprites.front_default}>
+      </div>`
     );
   });
-});
+};
